@@ -315,6 +315,44 @@ var PKICertGetCmd = &cobra.Command{
 	},
 }
 
+var PKISetSigning = &cobra.Command{
+	Use:   "set-signing",
+	Short: "Changes the sining cert for this pki",
+	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		cfg, err := types.LoadOrInitStorage(storageFile)
+		if err != nil {
+			output.Write(outputFormat, true, err.Error(), nil)
+		}
+
+		if pkiName == "" {
+			pkiName = cfg.Config.DefaultPKI
+			if pkiName == "" {
+				output.Write(outputFormat, true, "the pki name cannot be empty", nil)
+			}
+		}
+
+		p, ok := cfg.PKIs[pkiName]
+		if !ok {
+			output.Write(outputFormat, true, fmt.Sprintf("no such pki %s", pkiName), nil)
+		}
+
+		newSigning, ok := p.Certificates[args[0]]
+		if !ok {
+			output.Write(outputFormat, true, fmt.Sprintf("no such cert %s", args[0]), nil)
+		}
+
+		cfg.PKIs[pkiName].Config.RootCertificateID = newSigning.Serial
+		cfg.PKIs[pkiName].Config.DefaultKeyType = newSigning.KeyType
+		err = cfg.Save(storageFile)
+		if err != nil {
+			output.Write(outputFormat, true, err.Error(), nil)
+		}
+
+		output.Write(outputFormat, false, "new root signing certificate changed", nil)
+	},
+}
+
 var PKICertChainCmd = &cobra.Command{
 	Use:   "chain",
 	Short: "Gets the signing chain for a cert",
@@ -535,17 +573,20 @@ var ListPKICmd = &cobra.Command{
 		}
 
 		pkis := []struct {
-			Name    string `json:"name" yaml:"name"`
-			KeyType string `json:"keyType" yaml:"keyType"`
+			Name          string `json:"name" yaml:"name"`
+			KeyType       string `json:"keyType" yaml:"keyType"`
+			CertificateID string `json:"certID" yaml:"certID"`
 		}{}
 
 		for _, pki := range cfg.PKIs {
 			pkis = append(pkis, struct {
-				Name    string `json:"name" yaml:"name"`
-				KeyType string `json:"keyType" yaml:"keyType"`
+				Name          string `json:"name" yaml:"name"`
+				KeyType       string `json:"keyType" yaml:"keyType"`
+				CertificateID string `json:"certID" yaml:"certID"`
 			}{
-				Name:    pki.Name,
-				KeyType: pki.Config.DefaultKeyType,
+				Name:          pki.Name,
+				KeyType:       pki.Config.DefaultKeyType,
+				CertificateID: pki.Config.RootCertificateID,
 			})
 		}
 
@@ -582,6 +623,7 @@ func InitPKICmd() {
 	PKICmd.AddCommand(ListPKICmd)
 	PKICmd.AddCommand(GetPKICmd)
 	PKICmd.AddCommand(PKICertCmd)
+	PKICmd.AddCommand(PKISetSigning)
 
 	PKICertCmd.AddCommand(PKICertNewCmd)
 	PKICertCmd.AddCommand(PKICertListCmd)

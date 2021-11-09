@@ -43,7 +43,6 @@ type CertificateConfig struct {
 type PKIConfig struct {
 	RootCertificateID string `yaml:"rootCertificateID" json:"rootCertificateID"`
 	DefaultKeyType    string `yaml:"defaultKeyType" json:"defaultKeyType"`
-	DefaultKeyBits    int    `yaml:"defaultKeyBits" json:"defaultKeyBits"` // Used only for RSA & ECDSA keys
 }
 
 type PKI struct {
@@ -80,10 +79,6 @@ type RevokedCertificate struct {
 func (c *CertificateConfig) Fill(pki *PKI) {
 	if c.KeyType == "" {
 		c.KeyType = pki.Config.DefaultKeyType
-	}
-
-	if c.KeyBits == 0 {
-		c.KeyBits = pki.Config.DefaultKeyBits
 	}
 }
 
@@ -286,10 +281,9 @@ func NewPKI(
 		Config: PKIConfig{
 			RootCertificateID: intUUID.String(),
 			DefaultKeyType:    config.DefaultKeyType,
-			DefaultKeyBits:    config.KeyBits(),
 		},
 		Certificates: map[string]Certificate{
-			rootUUID.String(): Certificate{
+			rootUUID.String(): {
 				CommonName:          rootCertificate.Subject.CommonName,
 				IssuedAt:            rootCertificate.NotBefore,
 				ExpiresAt:           rootCertificate.NotAfter,
@@ -304,7 +298,7 @@ func NewPKI(
 				ServerCert:          false,
 				CA:                  true,
 			},
-			intUUID.String(): Certificate{
+			intUUID.String(): {
 				CommonName:          intCertificate.Subject.CommonName,
 				IssuedAt:            intCertificate.NotBefore,
 				ExpiresAt:           intCertificate.NotAfter,
