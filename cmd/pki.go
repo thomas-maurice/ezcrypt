@@ -37,6 +37,7 @@ var (
 	validity           int
 	passphrase         string
 	revokationReason   string
+	getFullChain       bool
 )
 
 var PKICmd = &cobra.Command{
@@ -276,6 +277,16 @@ var PKICertGetCertCmd = &cobra.Command{
 		}
 
 		fmt.Println(cert.Certificate)
+
+		if getFullChain {
+			chain, err := pki.Chain(p, cert)
+			if err != nil {
+				output.Write(outputFormat, true, err.Error(), nil)
+			}
+			for _, cert := range chain {
+				fmt.Println(cert)
+			}
+		}
 	},
 }
 
@@ -635,6 +646,8 @@ func InitPKICmd() {
 	PKICertCmd.AddCommand(PKICertChainCmd)
 	PKICertCmd.AddCommand(PKICertGetPubCmd)
 
+	PKICertGetCertCmd.Flags().BoolVarP(&getFullChain, "full-chain", "", false, "Gets the cert's full chain")
+
 	PKICertGetPKCmd.Flags().StringVarP(&passphrase, "passphrase", "p", "", "Passphrase for the key")
 
 	PKICertNewCmd.Flags().StringVarP(&commonName, "cn", "c", "", "Common name for the certificate")
@@ -648,6 +661,7 @@ func InitPKICmd() {
 	PKICertNewCmd.Flags().BoolVarP(&isCA, "ca", "", false, "Is this certificate a CA one ?")
 	PKICertNewCmd.Flags().BoolVarP(&selfSigned, "self-signed", "", false, "Is this certificate a self-signed one ?")
 	PKICertNewCmd.Flags().StringVarP(&signerUUID, "signer", "", "", "Signer for this cert")
+	PKICertNewCmd.Flags().IntVarP(&validity, "validity", "", 1, "Validity in years of the certificate")
 
 	PKICertRevokeCmd.Flags().StringVarP(&revokationReason, "revokeation-reason", "r", "none provided", "reason for revoking this cert")
 

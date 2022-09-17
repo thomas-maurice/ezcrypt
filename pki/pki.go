@@ -226,7 +226,7 @@ func NewPKI(
 		},
 		100,
 		true,
-		pubKeyInt,
+		pubKeyRoot,
 		nil,
 		privKeyRoot,
 		false,

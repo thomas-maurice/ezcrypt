@@ -73,6 +73,10 @@ func GenerateNewCertificate(
 		certificate.ExtKeyUsage = append(certificate.ExtKeyUsage, x509.ExtKeyUsageServerAuth)
 	}
 
+	if isCA {
+		certificate.KeyUsage = certificate.KeyUsage | x509.KeyUsageCertSign | x509.KeyUsageCRLSign
+	}
+
 	if caCert == nil {
 		caCert = certificate
 	}
