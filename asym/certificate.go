@@ -44,6 +44,7 @@ func GenerateNewCertificate(
 		BasicConstraintsValid: true,
 		IsCA:                  isCA,
 		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyAgreement,
+		DNSNames:              []string{name.CommonName},
 	}
 
 	if len(altNames) != 0 {

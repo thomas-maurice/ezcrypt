@@ -662,6 +662,7 @@ func InitPKICmd() {
 	PKICertNewCmd.Flags().BoolVarP(&selfSigned, "self-signed", "", false, "Is this certificate a self-signed one ?")
 	PKICertNewCmd.Flags().StringVarP(&signerUUID, "signer", "", "", "Signer for this cert")
 	PKICertNewCmd.Flags().IntVarP(&validity, "validity", "", 1, "Validity in years of the certificate")
+	PKICertNewCmd.Flags().StringSliceVar(&altNames, "alt-name", []string{}, "Adds alt dns names for the certificate (repeatable)")
 
 	PKICertRevokeCmd.Flags().StringVarP(&revokationReason, "revokeation-reason", "r", "none provided", "reason for revoking this cert")
 
